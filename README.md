@@ -1,2 +1,170 @@
 # utl-average-nap-time-for-three-babies-in-and-unsorted-table-using-a-hash-and-r
 Average nap time for three babies in and unsorted table using a hash and r
+
+    Average nap time for three babies in and unsorted table using a hash and r                          
+                                                                                                        
+    Using a hash to account for the lack of a matrix language                                           
+                                                                                                        
+          Two Solutions                                                                                 
+                                                                                                        
+             1. SAS HASH                                                                                
+             2. R                                                                                       
+                                                                                                        
+    Hash solution code with the help of Paul Dorfman and Don Henderson's book                           
+    'Data Management Solutions Using SAS Hash Table Operations', page 192.                              
+    You don't have to read the whole book, great index.                                                 
+                                                                                                        
+    *_                   _                                                                              
+    (_)_ __  _ __  _   _| |_                                                                            
+    | | '_ \| '_ \| | | | __|                                                                           
+    | | | | | |_) | |_| | |_                                                                            
+    |_|_| |_| .__/ \__,_|\__|                                                                           
+            |_|                                                                                         
+    ;                                                                                                   
+                                                                                                        
+                                                                                                        
+    data have;                                                                                          
+      input baby$ napTimes;                                                                             
+    cards4;                                                                                             
+    BabyMary  30                                                                                        
+    BabyMike  15                                                                                        
+    BabyKate  20                                                                                        
+    BabyMary  60                                                                                        
+    BabyMike  30                                                                                        
+    BabyMary  90                                                                                        
+    BabyMike  45                                                                                        
+    BabyKate  40                                                                                        
+    ;;;;                                                                                                
+    run;quit;                                                                                           
+                                                                                                        
+    *           _                                                                                       
+     _ __ _   _| | ___  ___                                                                             
+    | '__| | | | |/ _ \/ __|                                                                            
+    | |  | |_| | |  __/\__ \                                                                            
+    |_|   \__,_|_|\___||___/                                                                            
+                                                                                                        
+    ;                                                                                                   
+                                                                                                        
+    Data is sorted for documentation purposes only                                                      
+                                                                                                        
+    proc sort data=have out=havSrt;                                                                     
+      by baby;                                                                                          
+    run;quit;                                                                                           
+                                                                                                        
+    WORK.HAVSRT total obs=8                                                                             
+                                                                                                        
+                           | Rules                                                                      
+                           |                                                                            
+        BABY      NAPTIMES |  Means                                                                     
+                           |                                                                            
+      BabyKate       20    |                                                                            
+      BabyKate       40    |  30 Minutes (20+40)/2                                                      
+                           |                                                                            
+      BabyMary       30    |                                                                            
+      BabyMary       60    |                                                                            
+      BabyMary       90    |  60 Minutes                                                                
+                           |                                                                            
+      BabyMike       15    |                                                                            
+      BabyMike       30    |                                                                            
+      BabyMike       45    |  30 Minutes                                                                
+                                                                                                        
+    *            _               _                                                                      
+      ___  _   _| |_ _ __  _   _| |_                                                                    
+     / _ \| | | | __| '_ \| | | | __|                                                                   
+    | (_) | |_| | |_| |_) | |_| | |_                                                                    
+     \___/ \__,_|\__| .__/ \__,_|\__|                                                                   
+                    |_|                                                                                 
+    ;                                                                                                   
+    Up to 40 obs from WANT total obs=3                                                                  
+                                                                                                        
+    Obs      BABY      SUMNAPTIMES    NAPNUMS    MEANNAPTIMES                                           
+                                                                                                        
+     1     BabyKate         60           2            30                                                
+     2     BabyMary        180           3            60                                                
+     3     BabyMike         90           3            30                                                
+                                                                                                        
+    *          _       _   _                                                                            
+     ___  ___ | |_   _| |_(_) ___  _ __  ___                                                            
+    / __|/ _ \| | | | | __| |/ _ \| '_ \/ __|                                                           
+    \__ \ (_) | | |_| | |_| | (_) | | | \__ \                                                           
+    |___/\___/|_|\__,_|\__|_|\___/|_| |_|___/                                                           
+                                                                                                        
+    ;                                                                                                   
+                                                                                                        
+    *_      _               _                                                                           
+    / |    | |__   __ _ ___| |__                                                                        
+    | |    | '_ \ / _` / __| '_ \                                                                       
+    | |_   | | | | (_| \__ \ | | |                                                                      
+    |_(_)  |_| |_|\__,_|___/_| |_|                                                                      
+                                                                                                        
+    ;                                                                                                   
+                                                                                                        
+    data have;                                                                                          
+      input baby$ napTimes;                                                                             
+    cards4;                                                                                             
+    BabyMary  30                                                                                        
+    BabyMike  15                                                                                        
+    BabyKate  20                                                                                        
+    BabyMary  60                                                                                        
+    BabyMike  30                                                                                        
+    BabyMary  90                                                                                        
+    BabyMike  45                                                                                        
+    BabyKate  40                                                                                        
+    ;;;;                                                                                                
+    run;quit;                                                                                           
+                                                                                                        
+                                                                                                        
+    data _null_;                                                                                        
+     dcl hash h(ordered:"A");                                                                           
+     h.defineKey("Baby");                                                                               
+     h.defineData("Baby","sumNapTimes","napNums","meanNapTimes");                                       
+     h.defineDone();                                                                                    
+     do until(dne);                                                                                     
+        set have end = dne;                                                                             
+        call missing(sumNapTimes,napNums);                                                              
+        rc = h.find();                                                                                  
+        sumNapTimes  +  napTimes;                                                                       
+        napNums  + 1;                                                                                   
+        meanNapTimes = divide(sumNapTimes,napNums);                                                     
+        h.replace();                                                                                    
+     end;                                                                                               
+     h.output(dataset:"want");                                                                          
+    run;                                                                                                
+                                                                                                        
+    *____       ____                                                                                    
+    |___ \     |  _ \                                                                                   
+      __) |    | |_) |                                                                                  
+     / __/ _   |  _ <                                                                                   
+    |_____(_)  |_| \_\                                                                                  
+                                                                                                        
+    ;                                                                                                   
+                                                                                                        
+    %utl_submit_r64('                                                                                   
+    library(haven);                                                                                     
+    library(dplyr);                                                                                     
+    library(SASxport);                                                                                  
+    library(data.table);                                                                                
+    have<-read_sas("d:/sd1/have.sas7bdat");                                                             
+    want <- as.data.table(have %>%                                                                      
+       group_by(BABY) %>%                                                                               
+       summarise(NAPTIMES = mean(NAPTIMES))) ;                                                          
+    write.xport(want,file="d:/xpt/want.xpt");                                                           
+    ');                                                                                                 
+                                                                                                        
+    libname xpt xport "d:/xpt/want.xpt";                                                                
+    data want;                                                                                          
+      set xpt.want;                                                                                     
+    run;quit;                                                                                           
+    libname xpt clear;                                                                                  
+                                                                                                        
+    /*                                                                                                  
+    Up to 40 obs from WANT total obs=3                                                                  
+                                                                                                        
+    Obs      BABY      NAPTIMES                                                                         
+                                                                                                        
+     1     BabyKate       30                                                                            
+     2     BabyMary       60                                                                            
+     3     BabyMike       30                                                                            
+    */                                                                                                  
+                                                                                                        
+                                                                                                        
